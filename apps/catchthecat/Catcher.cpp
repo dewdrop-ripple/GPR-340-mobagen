@@ -1,37 +1,80 @@
 #include "Catcher.h"
 #include "World.h"
 
-Point2D Catcher::Move(CatWorld* world) {
-  std::vector<Point2D> path = generatePath(world);
-
-  if (path.size() == 0)
-  {
-    if (world->catcherCanMoveToPosition(world->E(world->getCat()))) { return world->E(world->getCat()); }
-    if (world->catcherCanMoveToPosition(world->NE(world->getCat()))) { return world->NE(world->getCat()); }
-    if (world->catcherCanMoveToPosition(world->NW(world->getCat()))) { return world->NW(world->getCat()); }
-    if (world->catcherCanMoveToPosition(world->W(world->getCat()))) { return world->W(world->getCat()); }
-    if (world->catcherCanMoveToPosition(world->SW(world->getCat()))) { return world->SW(world->getCat()); }
-    if (world->catcherCanMoveToPosition(world->SE(world->getCat()))) { return world->SE(world->getCat()); }
-
-    for (int i = world->getWorldSideSize() * -1; i < world->getWorldSideSize() / 2; i++)
+Point2D Catcher::Move(CatWorld* world)
+{
+    // If there are still border walls
+    if (!allBordersBlocked)
     {
-      for (int j = world->getWorldSideSize() * -1; j < world->getWorldSideSize() / 2; j++)
-      {
-        if (world->catcherCanMoveToPosition(Point2D(i, j))) { return Point2D(i, j); }
-      }
+        std::vector<Point2D> path = generatePath(world);
+
+        std::cout << path.size() << std::endl;
+
+        // Set to no border walls
+        // Mark off the box the cat is trapped in right now
+        if (allBordersBlocked)
+        {
+            catBoxMinX = (world->getWorldSideSize() / -2) + 1;
+            catBoxMaxX = (world->getWorldSideSize() / 2) - 1;
+            catBoxMinY = (world->getWorldSideSize() / -2) + 1;
+            catBoxMaxY = (world->getWorldSideSize() / 2) - 1;
+        }
+
+        // If an open border wall was found
+        // Block of logical next border wall
+        else
+        {
+            std::cout << "Open border wall at (" << path.front().x << "," << path.front().y << ")" << std::endl;
+            return path.front();
+        }
     }
-  }
 
-  if (world->catcherCanMoveToPosition(path.front()))
-  {
-    return path.front();
-  }
-
-  for (int i = path.size() - 2; i >= 0; i--)
-  {
-    if (world->catcherCanMoveToPosition(path[i]))
+    while (true)
     {
-      return path.front();
+        if (catBoxMaxX - catBoxMinX > catBoxMaxY - catBoxMinY)
+        {
+            int xValue = (catBoxMaxX + catBoxMinX) / 2;
+            for (int i = catBoxMinY; i <= catBoxMaxY; i++)
+            {
+                Point2D point = Point2D(xValue, i);
+                if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
+                {
+                    std::cout << "Cat in box (" << catBoxMinX << "," << catBoxMaxX << "," << catBoxMinY << "," << catBoxMaxY << ")" << std::endl;
+                    return point;
+                }
+            }
+
+            if (world->getCat().x > xValue)
+            {
+                catBoxMinX = xValue + 1;
+            }
+            else
+            {
+                catBoxMaxX = xValue - 1;
+            }
+        }
+        else
+        {
+            int yValue = (catBoxMaxY + catBoxMinY) / 2;
+            for (int i = catBoxMinX; i <= catBoxMaxX; i++)
+            {
+                Point2D point = Point2D(i, yValue);
+                if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
+                {
+                    std::cout << "Cat in box (" << catBoxMinX << "," << catBoxMaxX << "," << catBoxMinY << "," << catBoxMaxY
+                        << "), placing block (" << point.x << ", " << point.y << ")" << std::endl;
+                    return point;
+                }
+            }
+
+            if (world->getCat().y > yValue)
+            {
+                catBoxMinY = yValue + 1;
+            }
+            else
+            {
+                catBoxMaxY = yValue - 1;
+            }
+        }
     }
-  }
 }

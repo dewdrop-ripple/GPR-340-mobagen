@@ -21,7 +21,8 @@ bool Agent::isVisitable(CatWorld* w, const std::unordered_map<Point2D, bool>& vi
     alreadyVisited = false;
   }
 
-  return !alreadyVisited && (w->getCat() != point) && !w->getContent(point);
+  bool canVisit = !alreadyVisited && (w->getCat() != point) && !w->getContent(point);
+  return canVisit;
 }
 
 std::vector<Point2D> Agent::getVisitableNeightbors(CatWorld* w, const std::unordered_map<Point2D, bool>& visited, const Point2D& current)
@@ -40,79 +41,80 @@ std::vector<Point2D> Agent::getVisitableNeightbors(CatWorld* w, const std::unord
 
 std::vector<Point2D> Agent::generatePath(CatWorld* w)
 {
-  unordered_map<Point2D, Point2D> cameFrom;  // to build the flowfield and build the path
-  queue<PriorityQueuePoint2D> frontier;                   // to store next ones to visit
-  unordered_set<Point2D> frontierSet;        // OPTIMIZATION to check faster if a point is in the queue
-  unordered_map<Point2D, bool> visited;      // use .at() to get data, if the element dont exist [] will give you wrong results
-
-  // bootstrap state
-  auto catPos = w->getCat();
-  frontier.push(PriorityQueuePoint2D(catPos, 0));
-  frontierSet.insert(catPos);
-  Point2D borderExit = {INT32_MAX, INT32_MAX};  // sentinel: no border found yet
-  bool borderFound = false;
-
-  while (!frontierSet.empty()) {
-    // get the current from frontier
-    PriorityQueuePoint2D current = frontier.front();
-
-    // remove the current from frontierset
-    frontier.pop();
-
-    // mark current as visited
-    visited.insert(pair<Point2D, bool>(current.mPoint, true));
-
-    // getVisitableNeightbors(world, current) returns a vector of neighbors that are not visited, not cat, not block, not in the queue
-    std::vector<Point2D> nieghbors = getVisitableNeightbors(w, visited, current.mPoint);
-
-    // iterate over the neighs:
-    for (auto n : nieghbors)
-    {
-      // for every neighbor set the cameFrom
-      cameFrom.insert({n, current.mPoint});
-
-      // enqueue the neighbors to frontier and frontierset
-      frontier.push(PriorityQueuePoint2D(n, current.mPriority));
-
-      // do this up to find a visitable border and break the loop
-      if (w->catWinsOnSpace(n))
-      {
-        frontierSet.clear();
-        borderExit = n;
-        borderFound = true;
-        break;
-      }
-      else
-      {
-        frontierSet.insert(catPos);
-      }
-    }
-  }
-
-  if (borderFound)
+  if (!allBordersBlocked)
   {
-    // if the border is not infinity, build the path from border to the cat using the camefrom map
-    vector<Point2D> path = vector<Point2D>();
-    Point2D targetPoint = borderExit;
-    bool pathComplete = false;
+    unordered_map<Point2D, Point2D> cameFrom;  // to build the flowfield and build the path
+    queue<PriorityQueuePoint2D> frontier;                   // to store next ones to visit
+    unordered_set<Point2D> frontierSet;        // OPTIMIZATION to check faster if a point is in the queue
+    unordered_map<Point2D, bool> visited;      // use .at() to get data, if the element dont exist [] will give you wrong results
 
-    while (!pathComplete)
+    // bootstrap state
+    auto catPos = w->getCat();
+    frontier.push(PriorityQueuePoint2D(catPos, 0));
+    frontierSet.insert(catPos);
+    Point2D borderExit = {INT32_MAX, INT32_MAX};  // sentinel: no border found yet
+    bool borderFound = false;
+
+    while (!(frontier.empty() || borderFound))
     {
-      if (targetPoint == catPos)
+      // get the current from frontier
+      PriorityQueuePoint2D current = frontier.front();
+
+      // remove the current from frontierset
+      frontier.pop();
+
+      // getVisitableNeightbors(world, current) returns a vector of neighbors that are not visited, not cat, not block, not in the queue
+      std::vector<Point2D> nieghbors = getVisitableNeightbors(w, visited, current.mPoint);
+
+      // iterate over the neighs:
+      for (auto n : nieghbors)
       {
-        pathComplete = true;
-      }
-      else
-      {
-        path.push_back(targetPoint);
-        targetPoint = cameFrom.at(targetPoint);
+        // for every neighbor set the cameFrom
+        cameFrom.insert({n, current.mPoint});
+
+        // enqueue the neighbors to frontier and frontierset
+        frontier.push(PriorityQueuePoint2D(n, current.mPriority + 1));
+        frontierSet.insert(n);
+
+        // mark current as visited
+        visited.insert(pair<Point2D, bool>(n, true));
+
+        // do this up to find a visitable border and break the loop
+        if (w->catWinsOnSpace(n))
+        {
+          borderExit = n;
+          borderFound = true;
+          break;
+        }
       }
     }
 
-    // if your vector is filled from the border to the cat, the first element is the catcher move, and the last element is the cat move
-    return path;
+    if (borderFound)
+    {
+      // if the border is not infinity, build the path from border to the cat using the camefrom map
+      vector<Point2D> path = vector<Point2D>();
+      Point2D targetPoint = borderExit;
+      bool pathComplete = false;
+
+      while (!pathComplete)
+      {
+        if (targetPoint == catPos)
+        {
+          pathComplete = true;
+        }
+        else
+        {
+          path.push_back(targetPoint);
+          targetPoint = cameFrom.at(targetPoint);
+        }
+      }
+
+      // if your vector is filled from the border to the cat, the first element is the catcher move, and the last element is the cat move
+      return path;
+    }
   }
 
   // if there isnt a reachable border, just return empty vector
+  allBordersBlocked = true;
   return vector<Point2D>();
 }

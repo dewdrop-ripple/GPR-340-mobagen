@@ -38,6 +38,9 @@ class Agent
   std::vector<Point2D> getVisitableNeightbors(CatWorld* w, const std::unordered_map<Point2D, bool>& visited, const Point2D& current);
   bool isVisitable(CatWorld* w, const std::unordered_map<Point2D, bool>& visited, const Point2D& point);
 
+protected:
+  bool allBordersBlocked = false;
+
 public:
   explicit Agent() = default;
   virtual ~Agent() = default;
