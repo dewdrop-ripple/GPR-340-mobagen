@@ -8,8 +8,6 @@ Point2D Catcher::Move(CatWorld* world)
     {
         std::vector<Point2D> path = generatePath(world);
 
-        std::cout << path.size() << std::endl;
-
         // Set to no border walls
         // Mark off the box the cat is trapped in right now
         if (allBordersBlocked)
@@ -21,16 +19,34 @@ Point2D Catcher::Move(CatWorld* world)
         }
 
         // If an open border wall was found
-        // Block of logical next border wall
         else
         {
-            std::cout << "Open border wall at (" << path.front().x << "," << path.front().y << ")" << std::endl;
-            return path.front();
+            // If the cat is about to escape, stop it
+            if (path.size() <= 1)
+            {
+                return path.front();
+            }
+
+            // Otherwise leave the gap and block off other walls in the meantime
+            return GetNextLogicalWall(world, path.front());
         }
     }
 
+    // If the cat is trapped in a 3x3 box or smaller, just start closing off walls next to it
+    if ((catBoxMaxX - catBoxMinX) * (catBoxMaxY - catBoxMinY) <= 9)
+    {
+        if (world->catcherCanMoveToPosition(world->E(world->getCat())) && !world->getContent(world->E(world->getCat()))) { return world->E(world->getCat()); }
+        if (world->catcherCanMoveToPosition(world->NE(world->getCat())) && !world->getContent(world->NE(world->getCat()))) { return world->NE(world->getCat()); }
+        if (world->catcherCanMoveToPosition(world->NW(world->getCat())) && !world->getContent(world->NW(world->getCat()))) { return world->NW(world->getCat()); }
+        if (world->catcherCanMoveToPosition(world->W(world->getCat())) && !world->getContent(world->W(world->getCat()))) { return world->W(world->getCat()); }
+        if (world->catcherCanMoveToPosition(world->SW(world->getCat())) && !world->getContent(world->SW(world->getCat()))) { return world->SW(world->getCat()); }
+        if (world->catcherCanMoveToPosition(world->SE(world->getCat())) && !world->getContent(world->SE(world->getCat()))) { return world->SE(world->getCat()); }
+    }
+
+    // If the cat is trapped but can still run, slowly cut the area it can run in half
     while (true)
     {
+        // Cut the longer side in half
         if (catBoxMaxX - catBoxMinX > catBoxMaxY - catBoxMinY)
         {
             int xValue = (catBoxMaxX + catBoxMinX) / 2;
@@ -39,11 +55,11 @@ Point2D Catcher::Move(CatWorld* world)
                 Point2D point = Point2D(xValue, i);
                 if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
                 {
-                    std::cout << "Cat in box (" << catBoxMinX << "," << catBoxMaxX << "," << catBoxMinY << "," << catBoxMaxY << ")" << std::endl;
                     return point;
                 }
             }
 
+            // Adjust bounds as needed
             if (world->getCat().x > xValue)
             {
                 catBoxMinX = xValue + 1;
@@ -61,12 +77,11 @@ Point2D Catcher::Move(CatWorld* world)
                 Point2D point = Point2D(i, yValue);
                 if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
                 {
-                    std::cout << "Cat in box (" << catBoxMinX << "," << catBoxMaxX << "," << catBoxMinY << "," << catBoxMaxY
-                        << "), placing block (" << point.x << ", " << point.y << ")" << std::endl;
                     return point;
                 }
             }
 
+            // Adjust bounds as needed
             if (world->getCat().y > yValue)
             {
                 catBoxMinY = yValue + 1;
@@ -76,5 +91,34 @@ Point2D Catcher::Move(CatWorld* world)
                 catBoxMaxY = yValue - 1;
             }
         }
+    }
+}
+
+// Given a wall, iterate around the edge of the map clockwise and counterclockwise to find another wall to block
+Point2D Catcher::GetNextLogicalWall(CatWorld* world, Point2D wall)
+{
+    int leftWall =(world->getWorldSideSize() / -2);
+    int rightWall =(world->getWorldSideSize() / 2);
+    int bottomWall = (world->getWorldSideSize() / -2);
+    int topWall = (world->getWorldSideSize() / 2);
+
+    Point2D targetPointCW = wall;
+    Point2D targetPointCCW = wall;
+
+    while (true)
+    {
+        if (targetPointCW.x == leftWall && targetPointCW.y != topWall) { targetPointCW.y++; }
+        else if (targetPointCW.y == topWall && targetPointCW.x != rightWall) { targetPointCW.x++; }
+        else if (targetPointCW.x == rightWall && targetPointCW.y != bottomWall) { targetPointCW.y--; }
+        else if (targetPointCW.y == bottomWall && targetPointCW.x != leftWall) { targetPointCW.x--; }
+
+        if (world->catcherCanMoveToPosition(targetPointCW) && !world->getContent(targetPointCW)) { return targetPointCW; }
+
+        if (targetPointCCW.x == leftWall && targetPointCCW.y != bottomWall) { targetPointCCW.y--; }
+        else if (targetPointCCW.y == bottomWall && targetPointCCW.x != rightWall) { targetPointCCW.x++; }
+        else if (targetPointCCW.x == rightWall && targetPointCCW.y != topWall) { targetPointCCW.y++; }
+        else if (targetPointCCW.y == topWall && targetPointCCW.x != leftWall) { targetPointCCW.x--; }
+
+        if (world->catcherCanMoveToPosition(targetPointCCW) && !world->getContent(targetPointCCW)) { return targetPointCCW; }
     }
 }
