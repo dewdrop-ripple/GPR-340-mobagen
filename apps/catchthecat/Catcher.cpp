@@ -57,45 +57,55 @@ Point2D Catcher::Move(CatWorld* world)
         else if (catBoxMaxX - catBoxMinX > catBoxMaxY - catBoxMinY)
         {
             int xValue = (catBoxMaxX + catBoxMinX) / 2;
+            bool cutFound = false;
             for (int i = catBoxMinY; i <= catBoxMaxY; i++)
             {
                 Point2D point = Point2D(xValue, i);
                 if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
                 {
                     move = point;
+                    cutFound = true;
                 }
             }
 
-            // Adjust bounds as needed
-            if (world->getCat().x > xValue)
+            if (!cutFound)
             {
-                catBoxMinX = xValue + 1;
-            }
-            else
-            {
-                catBoxMaxX = xValue - 1;
+                // Adjust bounds as needed
+                if (world->getCat().x > xValue)
+                {
+                    catBoxMinX = xValue + 1;
+                }
+                else
+                {
+                    catBoxMaxX = xValue - 1;
+                }
             }
         }
         else
         {
             int yValue = (catBoxMaxY + catBoxMinY) / 2;
+            bool cutFound = false;
             for (int i = catBoxMinX; i <= catBoxMaxX; i++)
             {
                 Point2D point = Point2D(i, yValue);
                 if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
                 {
                     move = point;
+                    cutFound = true;
                 }
             }
 
-            // Adjust bounds as needed
-            if (world->getCat().y > yValue)
+            if (!cutFound)
             {
-                catBoxMinY = yValue + 1;
-            }
-            else
-            {
-                catBoxMaxY = yValue - 1;
+                // Adjust bounds as needed
+                if (world->getCat().y > yValue)
+                {
+                    catBoxMinY = yValue + 1;
+                }
+                else
+                {
+                    catBoxMaxY = yValue - 1;
+                }
             }
         }
     }
