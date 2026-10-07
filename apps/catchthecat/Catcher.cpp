@@ -3,6 +3,10 @@
 
 Point2D Catcher::Move(CatWorld* world)
 {
+    if (abs(world->getCat().x) < 1 && abs(world->getCat().y < 1)) { Reset(); }
+
+    Point2D move = Point2D(0.5, 0.5);
+
     // If there are still border walls
     if (!allBordersBlocked)
     {
@@ -24,27 +28,32 @@ Point2D Catcher::Move(CatWorld* world)
             // If the cat is about to escape, stop it
             if (path.size() <= 1)
             {
-                return path.front();
+                move = path.front();
             }
-
             // Otherwise leave the gap and block off other walls in the meantime
-            return GetNextLogicalWall(world, path.front());
+            else
+            {
+                move = GetNextLogicalWall(world, path.front());
+            }
         }
     }
 
-    // If the cat is trapped in a 3x3 box or smaller, just start closing off walls next to it
-    if ((catBoxMaxX - catBoxMinX) * (catBoxMaxY - catBoxMinY) <= 9)
+    if (move.x * 2 == 1)
     {
-        if (world->catcherCanMoveToPosition(world->E(world->getCat())) && !world->getContent(world->E(world->getCat()))) { return world->E(world->getCat()); }
-        if (world->catcherCanMoveToPosition(world->NE(world->getCat())) && !world->getContent(world->NE(world->getCat()))) { return world->NE(world->getCat()); }
-        if (world->catcherCanMoveToPosition(world->NW(world->getCat())) && !world->getContent(world->NW(world->getCat()))) { return world->NW(world->getCat()); }
-        if (world->catcherCanMoveToPosition(world->W(world->getCat())) && !world->getContent(world->W(world->getCat()))) { return world->W(world->getCat()); }
-        if (world->catcherCanMoveToPosition(world->SW(world->getCat())) && !world->getContent(world->SW(world->getCat()))) { return world->SW(world->getCat()); }
-        if (world->catcherCanMoveToPosition(world->SE(world->getCat())) && !world->getContent(world->SE(world->getCat()))) { return world->SE(world->getCat()); }
+        // If the cat is trapped in a 3x3 box or smaller, just start closing off walls next to it
+        if ((catBoxMaxX - catBoxMinX) * (catBoxMaxY - catBoxMinY) <= 9)
+        {
+            if (world->catcherCanMoveToPosition(world->E(world->getCat())) && !world->getContent(world->E(world->getCat()))) { move = world->E(world->getCat()); }
+            else if (world->catcherCanMoveToPosition(world->NE(world->getCat())) && !world->getContent(world->NE(world->getCat()))) { move = world->NE(world->getCat()); }
+            else if (world->catcherCanMoveToPosition(world->NW(world->getCat())) && !world->getContent(world->NW(world->getCat()))) { move = world->NW(world->getCat()); }
+            else if (world->catcherCanMoveToPosition(world->W(world->getCat())) && !world->getContent(world->W(world->getCat()))) { move = world->W(world->getCat()); }
+            else if (world->catcherCanMoveToPosition(world->SW(world->getCat())) && !world->getContent(world->SW(world->getCat()))) { move = world->SW(world->getCat()); }
+            else if (world->catcherCanMoveToPosition(world->SE(world->getCat())) && !world->getContent(world->SE(world->getCat()))) { move = world->SE(world->getCat()); }
+        }
     }
 
     // If the cat is trapped but can still run, slowly cut the area it can run in half
-    while (true)
+    while (move.x * 2 == 1)
     {
         // Cut the longer side in half
         if (catBoxMaxX - catBoxMinX > catBoxMaxY - catBoxMinY)
@@ -55,7 +64,7 @@ Point2D Catcher::Move(CatWorld* world)
                 Point2D point = Point2D(xValue, i);
                 if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
                 {
-                    return point;
+                    move = point;
                 }
             }
 
@@ -77,7 +86,7 @@ Point2D Catcher::Move(CatWorld* world)
                 Point2D point = Point2D(i, yValue);
                 if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
                 {
-                    return point;
+                    move = point;
                 }
             }
 
@@ -92,6 +101,9 @@ Point2D Catcher::Move(CatWorld* world)
             }
         }
     }
+
+    world->lastMove = move;
+    return move;
 }
 
 // Given a wall, iterate around the edge of the map clockwise and counterclockwise to find another wall to block
@@ -121,4 +133,14 @@ Point2D Catcher::GetNextLogicalWall(CatWorld* world, Point2D wall)
 
         if (world->catcherCanMoveToPosition(targetPointCCW) && !world->getContent(targetPointCCW)) { return targetPointCCW; }
     }
+}
+
+void Catcher::Reset()
+{
+    catBoxMinX = NULL;
+    catBoxMaxX = NULL;
+    catBoxMinY = NULL;
+    catBoxMaxY = NULL;
+
+    allBordersBlocked = false;
 }

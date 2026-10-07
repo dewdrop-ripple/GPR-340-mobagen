@@ -12,6 +12,8 @@ class Catcher : public Agent
 
   Point2D GetNextLogicalWall(CatWorld* world, Point2D wall);
 
+  void Reset();
+
 public:
   explicit Catcher() : Agent(){};
   Point2D Move(CatWorld*) override;

@@ -9,6 +9,8 @@ class Cat : public Agent
 
   bool isGoodPosition(CatWorld* w, Point2D p);
 
+  void Reset();
+
 public:
   explicit Cat() : Agent(){};
   Point2D Move(CatWorld*) override;
