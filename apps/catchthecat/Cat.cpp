@@ -15,13 +15,17 @@ Point2D Cat::Move(CatWorld* world)
     std::vector<Point2D> path = generatePath(world);
 
     // If there is a path, move down it
-    if (!allBordersBlocked)
+    if (path.size() == 0)
+    {
+      allBordersBlocked = true;
+    }
+    else
     {
       move = path.back();
     }
   }
 
-  if (move.x * 2 == 1)
+  if (allBordersBlocked)
   {
     // If no path, move to a random position that isn't where the cat just was
     if (isGoodPosition(world, world->E(world->getCat()))) { lastPoint = world->E(world->getCat()); move = world->E(world->getCat()); }
@@ -30,12 +34,9 @@ Point2D Cat::Move(CatWorld* world)
     else if (isGoodPosition(world, world->W(world->getCat()))) { lastPoint = world->W(world->getCat()); move = world->W(world->getCat()); }
     else if (isGoodPosition(world, world->SW(world->getCat()))) { lastPoint = world->SW(world->getCat()); move = world->SW(world->getCat()); }
     else if (isGoodPosition(world, world->SE(world->getCat()))) { lastPoint = world->SE(world->getCat()); move = world->SE(world->getCat()); }
-  }
 
-  if (move.x * 2 == 1)
-  {
     // If trapped in a 1x2 spot, just move where you can
-    if (world->catCanMoveToPosition(world->E(world->getCat()))) { lastPoint = world->E(world->getCat()); move = world->E(world->getCat()); }
+    else if (world->catCanMoveToPosition(world->E(world->getCat()))) { lastPoint = world->E(world->getCat()); move = world->E(world->getCat()); }
     else if (world->catCanMoveToPosition(world->NE(world->getCat()))) { lastPoint = world->NE(world->getCat()); move = world->NE(world->getCat()); }
     else if (world->catCanMoveToPosition(world->NW(world->getCat()))) { lastPoint = world->NW(world->getCat()); move = world->NW(world->getCat()); }
     else if (world->catCanMoveToPosition(world->W(world->getCat()))) { lastPoint = world->W(world->getCat()); move = world->W(world->getCat()); }

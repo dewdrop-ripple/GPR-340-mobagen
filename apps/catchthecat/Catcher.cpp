@@ -14,8 +14,10 @@ Point2D Catcher::Move(CatWorld* world)
 
         // Set to no border walls
         // Mark off the box the cat is trapped in right now
-        if (allBordersBlocked)
+        if (path.size() == 0)
         {
+            allBordersBlocked = true;
+
             catBoxMinX = (world->getWorldSideSize() / -2) + 1;
             catBoxMaxX = (world->getWorldSideSize() / 2) - 1;
             catBoxMinY = (world->getWorldSideSize() / -2) + 1;
@@ -26,7 +28,7 @@ Point2D Catcher::Move(CatWorld* world)
         else
         {
             // If the cat is about to escape, stop it
-            if (path.size() <= 1)
+            if (path.size() <= 2)
             {
                 move = path.front();
             }
@@ -38,7 +40,7 @@ Point2D Catcher::Move(CatWorld* world)
         }
     }
 
-    if (move.x * 2 == 1)
+    if (allBordersBlocked)
     {
         // If the cat is trapped in a 3x3 box or smaller, just start closing off walls next to it
         if ((catBoxMaxX - catBoxMinX) * (catBoxMaxY - catBoxMinY) <= 9)
@@ -50,13 +52,9 @@ Point2D Catcher::Move(CatWorld* world)
             else if (world->catcherCanMoveToPosition(world->SW(world->getCat())) && !world->getContent(world->SW(world->getCat()))) { move = world->SW(world->getCat()); }
             else if (world->catcherCanMoveToPosition(world->SE(world->getCat())) && !world->getContent(world->SE(world->getCat()))) { move = world->SE(world->getCat()); }
         }
-    }
 
-    // If the cat is trapped but can still run, slowly cut the area it can run in half
-    while (move.x * 2 == 1)
-    {
         // Cut the longer side in half
-        if (catBoxMaxX - catBoxMinX > catBoxMaxY - catBoxMinY)
+        else if (catBoxMaxX - catBoxMinX > catBoxMaxY - catBoxMinY)
         {
             int xValue = (catBoxMaxX + catBoxMinX) / 2;
             for (int i = catBoxMinY; i <= catBoxMaxY; i++)
