@@ -30,55 +30,55 @@ Point2D Cat::Move(CatWorld* world)
     bool moveFound = false;
     while (!moveFound)
     {
-    auto rand = Random::Range(0, 5);
-    auto pos = world->getCat();
-    switch (rand)
-    {
-      case 0:
-        if (world->catCanMoveToPosition(world->NE(pos)))
-        {
-          moveFound = true;
-          move = world->NE(pos);
-        }
-        break;
-      case 1:
-        if (world->catCanMoveToPosition(world->NW(pos)))
-        {
-          moveFound = true;
-          move = world->NW(pos);
-        }
-        break;
-      case 2:
-        if (world->catCanMoveToPosition(world->E(pos)))
-        {
-          moveFound = true;
-          move = world->E(pos);
-        }
-        break;
-      case 3:
-        if (world->catCanMoveToPosition(world->W(pos)))
-        {
-          moveFound = true;
-          move = world->W(pos);
-        }
-        break;
-      case 4:
-        if (world->catCanMoveToPosition(world->SW(pos)))
-        {
-          moveFound = true;
-          move = world->SW(pos);
-        }
-        break;
-      case 5:
-        if (world->catCanMoveToPosition(world->SE(pos)))
-        {
-          moveFound = true;
-          move = world->SE(pos);
-        }
-        break;
-      default:
-        throw std::runtime_error("random out of range");
-    }
+      auto rand = Random::Range(0, 5);
+      auto pos = world->getCat();
+      switch (rand)
+      {
+        case 0:
+          if (world->catCanMoveToPosition(world->NE(pos)))
+          {
+            moveFound = true;
+            move = world->NE(pos);
+          }
+          break;
+        case 1:
+          if (world->catCanMoveToPosition(world->NW(pos)))
+          {
+            moveFound = true;
+            move = world->NW(pos);
+          }
+          break;
+        case 2:
+          if (world->catCanMoveToPosition(world->E(pos)))
+          {
+            moveFound = true;
+            move = world->E(pos);
+          }
+          break;
+        case 3:
+          if (world->catCanMoveToPosition(world->W(pos)))
+          {
+            moveFound = true;
+            move = world->W(pos);
+          }
+          break;
+        case 4:
+          if (world->catCanMoveToPosition(world->SW(pos)))
+          {
+            moveFound = true;
+            move = world->SW(pos);
+          }
+          break;
+        case 5:
+          if (world->catCanMoveToPosition(world->SE(pos)))
+          {
+            moveFound = true;
+            move = world->SE(pos);
+          }
+          break;
+        default:
+          throw std::runtime_error("random out of range");
+      }
     }
   }
 
