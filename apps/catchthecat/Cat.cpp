@@ -27,47 +27,66 @@ Point2D Cat::Move(CatWorld* world)
 
   if (allBordersBlocked)
   {
-    // If no path, move to a random position that isn't where the cat just was
-    if (isGoodPosition(world, world->E(world->getCat()))) { lastPoint = world->E(world->getCat()); move = world->E(world->getCat()); }
-    else if (isGoodPosition(world, world->NE(world->getCat()))) { lastPoint = world->NE(world->getCat()); move = world->NE(world->getCat()); }
-    else if (isGoodPosition(world, world->NW(world->getCat()))) { lastPoint = world->NW(world->getCat()); move = world->NW(world->getCat()); }
-    else if (isGoodPosition(world, world->W(world->getCat()))) { lastPoint = world->W(world->getCat()); move = world->W(world->getCat()); }
-    else if (isGoodPosition(world, world->SW(world->getCat()))) { lastPoint = world->SW(world->getCat()); move = world->SW(world->getCat()); }
-    else if (isGoodPosition(world, world->SE(world->getCat()))) { lastPoint = world->SE(world->getCat()); move = world->SE(world->getCat()); }
-
-    // If trapped in a 1x2 spot, just move where you can
-    else if (world->catCanMoveToPosition(world->E(world->getCat()))) { lastPoint = world->E(world->getCat()); move = world->E(world->getCat()); }
-    else if (world->catCanMoveToPosition(world->NE(world->getCat()))) { lastPoint = world->NE(world->getCat()); move = world->NE(world->getCat()); }
-    else if (world->catCanMoveToPosition(world->NW(world->getCat()))) { lastPoint = world->NW(world->getCat()); move = world->NW(world->getCat()); }
-    else if (world->catCanMoveToPosition(world->W(world->getCat()))) { lastPoint = world->W(world->getCat()); move = world->W(world->getCat()); }
-    else if (world->catCanMoveToPosition(world->SW(world->getCat()))) { lastPoint = world->SW(world->getCat()); move = world->SW(world->getCat()); }
-    else if (world->catCanMoveToPosition(world->SE(world->getCat()))) { lastPoint = world->SE(world->getCat()); move = world->SE(world->getCat()); }
+    bool moveFound = false;
+    while (!moveFound)
+    {
+    auto rand = Random::Range(0, 5);
+    auto pos = world->getCat();
+    switch (rand)
+    {
+      case 0:
+        if (world->catCanMoveToPosition(world->NE(pos)))
+        {
+          moveFound = true;
+          move = world->NE(pos);
+        }
+        break;
+      case 1:
+        if (world->catCanMoveToPosition(world->NW(pos)))
+        {
+          moveFound = true;
+          move = world->NW(pos);
+        }
+        break;
+      case 2:
+        if (world->catCanMoveToPosition(world->E(pos)))
+        {
+          moveFound = true;
+          move = world->E(pos);
+        }
+        break;
+      case 3:
+        if (world->catCanMoveToPosition(world->W(pos)))
+        {
+          moveFound = true;
+          move = world->W(pos);
+        }
+        break;
+      case 4:
+        if (world->catCanMoveToPosition(world->SW(pos)))
+        {
+          moveFound = true;
+          move = world->SW(pos);
+        }
+        break;
+      case 5:
+        if (world->catCanMoveToPosition(world->SE(pos)))
+        {
+          moveFound = true;
+          move = world->SE(pos);
+        }
+        break;
+      default:
+        throw std::runtime_error("random out of range");
+    }
+    }
   }
 
   world->lastMove = move;
   return move;
 }
 
-// Checks if a spot is not a wall and is not where the cat just was
-bool Cat::isGoodPosition(CatWorld* w, Point2D p)
-{
-  bool open = w->catCanMoveToPosition(p);
-
-  bool oldPos = false;
-  if (!(lastPoint.x * 2 == 1))
-  {
-    if (p.x == lastPoint.x && p.y == lastPoint.y)
-    {
-      oldPos = true;
-    }
-  };
-
-  return open && !oldPos;
-}
-
 void Cat::Reset()
 {
-  lastPoint = Point2D(0.5, 0.5);
-
   allBordersBlocked = false;
 }

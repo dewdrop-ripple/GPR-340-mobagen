@@ -5,10 +5,6 @@
 
 class Cat : public Agent
 {
-  Point2D lastPoint = Point2D(0.5, 0.5);
-
-  bool isGoodPosition(CatWorld* w, Point2D p);
-
   void Reset();
 
 public:

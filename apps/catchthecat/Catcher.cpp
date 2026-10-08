@@ -40,74 +40,76 @@ Point2D Catcher::Move(CatWorld* world)
         }
     }
 
+    bool cutFound = false;
     if (allBordersBlocked)
     {
         // If the cat is trapped in a 3x3 box or smaller, just start closing off walls next to it
-        if ((catBoxMaxX - catBoxMinX) * (catBoxMaxY - catBoxMinY) <= 9)
+        // Otherwise, cut the longer side in half
+        if ((catBoxMaxX - catBoxMinX) * (catBoxMaxY - catBoxMinY) >= 9)
         {
-            if (world->catcherCanMoveToPosition(world->E(world->getCat())) && !world->getContent(world->E(world->getCat()))) { move = world->E(world->getCat()); }
-            else if (world->catcherCanMoveToPosition(world->NE(world->getCat())) && !world->getContent(world->NE(world->getCat()))) { move = world->NE(world->getCat()); }
-            else if (world->catcherCanMoveToPosition(world->NW(world->getCat())) && !world->getContent(world->NW(world->getCat()))) { move = world->NW(world->getCat()); }
-            else if (world->catcherCanMoveToPosition(world->W(world->getCat())) && !world->getContent(world->W(world->getCat()))) { move = world->W(world->getCat()); }
-            else if (world->catcherCanMoveToPosition(world->SW(world->getCat())) && !world->getContent(world->SW(world->getCat()))) { move = world->SW(world->getCat()); }
-            else if (world->catcherCanMoveToPosition(world->SE(world->getCat())) && !world->getContent(world->SE(world->getCat()))) { move = world->SE(world->getCat()); }
-        }
-
-        // Cut the longer side in half
-        else if (catBoxMaxX - catBoxMinX > catBoxMaxY - catBoxMinY)
-        {
-            int xValue = (catBoxMaxX + catBoxMinX) / 2;
-            bool cutFound = false;
-            for (int i = catBoxMinY; i <= catBoxMaxY; i++)
+            if (catBoxMaxX - catBoxMinX > catBoxMaxY - catBoxMinY)
             {
-                Point2D point = Point2D(xValue, i);
-                if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
+                int xValue = (catBoxMaxX + catBoxMinX) / 2;
+                for (int i = catBoxMinY; i <= catBoxMaxY; i++)
                 {
-                    move = point;
-                    cutFound = true;
+                    Point2D point = Point2D(xValue, i);
+                    if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
+                    {
+                        move = point;
+                        cutFound = true;
+                    }
+                }
+
+                if (!cutFound)
+                {
+                    // Adjust bounds as needed
+                    if (world->getCat().x > xValue)
+                    {
+                        catBoxMinX = xValue + 1;
+                    }
+                    else
+                    {
+                        catBoxMaxX = xValue - 1;
+                    }
                 }
             }
+            else
+            {
+                int yValue = (catBoxMaxY + catBoxMinY) / 2;
+                for (int i = catBoxMinX; i <= catBoxMaxX; i++)
+                {
+                    Point2D point = Point2D(i, yValue);
+                    if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
+                    {
+                        move = point;
+                        cutFound = true;
+                    }
+                }
 
-            if (!cutFound)
-            {
-                // Adjust bounds as needed
-                if (world->getCat().x > xValue)
+                if (!cutFound)
                 {
-                    catBoxMinX = xValue + 1;
-                }
-                else
-                {
-                    catBoxMaxX = xValue - 1;
-                }
-            }
-        }
-        else
-        {
-            int yValue = (catBoxMaxY + catBoxMinY) / 2;
-            bool cutFound = false;
-            for (int i = catBoxMinX; i <= catBoxMaxX; i++)
-            {
-                Point2D point = Point2D(i, yValue);
-                if (world->catcherCanMoveToPosition(point) && !world->getContent(point))
-                {
-                    move = point;
-                    cutFound = true;
-                }
-            }
-
-            if (!cutFound)
-            {
-                // Adjust bounds as needed
-                if (world->getCat().y > yValue)
-                {
-                    catBoxMinY = yValue + 1;
-                }
-                else
-                {
-                    catBoxMaxY = yValue - 1;
+                    // Adjust bounds as needed
+                    if (world->getCat().y > yValue)
+                    {
+                        catBoxMinY = yValue + 1;
+                    }
+                    else
+                    {
+                        catBoxMaxY = yValue - 1;
+                    }
                 }
             }
         }
+    }
+
+    if (allBordersBlocked && !cutFound)
+    {
+        if (world->catcherCanMoveToPosition(world->E(world->getCat())) && !world->getContent(world->E(world->getCat()))) { move = world->E(world->getCat()); }
+        else if (world->catcherCanMoveToPosition(world->NE(world->getCat())) && !world->getContent(world->NE(world->getCat()))) { move = world->NE(world->getCat()); }
+        else if (world->catcherCanMoveToPosition(world->NW(world->getCat())) && !world->getContent(world->NW(world->getCat()))) { move = world->NW(world->getCat()); }
+        else if (world->catcherCanMoveToPosition(world->W(world->getCat())) && !world->getContent(world->W(world->getCat()))) { move = world->W(world->getCat()); }
+        else if (world->catcherCanMoveToPosition(world->SW(world->getCat())) && !world->getContent(world->SW(world->getCat()))) { move = world->SW(world->getCat()); }
+        else if (world->catcherCanMoveToPosition(world->SE(world->getCat())) && !world->getContent(world->SE(world->getCat()))) { move = world->SE(world->getCat()); }
     }
 
     world->lastMove = move;
