@@ -42,7 +42,7 @@ std::vector<Point2D> Agent::getVisitableNeightbors(CatWorld* w, const std::unord
 std::vector<Point2D> Agent::generatePath(CatWorld* w)
 {
   unordered_map<Point2D, Point2D> cameFrom;  // to build the flowfield and build the path
-  queue<PriorityQueuePoint2D> frontier;                   // to store next ones to visit
+  priority_queue<PriorityQueuePoint2D> frontier;                   // to store next ones to visit
   unordered_set<Point2D> frontierSet;        // OPTIMIZATION to check faster if a point is in the queue
   unordered_map<Point2D, bool> visited;      // use .at() to get data, if the element dont exist [] will give you wrong results
 
@@ -56,7 +56,7 @@ std::vector<Point2D> Agent::generatePath(CatWorld* w)
   while (!(frontier.empty() || borderFound))
   {
     // get the current from frontier
-    PriorityQueuePoint2D current = frontier.front();
+    PriorityQueuePoint2D current = frontier.top();
 
     // remove the current from frontierset
     frontier.pop();
@@ -71,7 +71,7 @@ std::vector<Point2D> Agent::generatePath(CatWorld* w)
       cameFrom.insert({n, current.mPoint});
 
       // enqueue the neighbors to frontier and frontierset
-      frontier.push(PriorityQueuePoint2D(n, current.mPriority + 1));
+      frontier.push(PriorityQueuePoint2D(n, current.mPriority + min((w->getWorldSideSize()/2 - abs(n.x)), (w->getWorldSideSize()/2 - abs(n.y)))));
       frontierSet.insert(n);
 
       // mark current as visited

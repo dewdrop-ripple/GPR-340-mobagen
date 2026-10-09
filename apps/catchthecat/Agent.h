@@ -12,9 +12,15 @@ using Point2D = glm::ivec2;
 struct PriorityQueuePoint2D
 {
   Point2D mPoint;
-  int mPriority;
+  float mPriority;
 
-  PriorityQueuePoint2D(Point2D point, int priority) : mPoint(point), mPriority(priority) {}
+  PriorityQueuePoint2D(Point2D point, float priority) : mPoint(point), mPriority(priority) {}
+
+  bool operator<(const PriorityQueuePoint2D& p) const noexcept { return mPriority > p.mPriority; }
+  bool operator>(const PriorityQueuePoint2D& p) const noexcept { return mPriority < p.mPriority; }
+  bool operator<=(const PriorityQueuePoint2D& p) const noexcept { return mPriority >= p.mPriority; }
+  bool operator>=(const PriorityQueuePoint2D& p) const noexcept { return mPriority <= p.mPriority; }
+  bool operator==(const PriorityQueuePoint2D& p) const noexcept { return mPriority == p.mPriority; }
 };
 
 // Hash specialization so Point2D (= glm::ivec2) works in unordered containers.
